@@ -7,13 +7,23 @@ import BaseSearch
 # Author: Abigail Pitcairn
 
 
-def rerank_documents_with_llm(queries, initial_results, documents, model_name, prompt, batch_size=8):
+# Automate rerank and save output.
+def llm_search(model_name, prompt, base_results, topics, answers, output_file_path):
+    # Rerank base results with LLM search.
+    print("Reranking with LLM...")
+    reranked_results = rerank_documents_with_llm(topics, base_results, answers, model_name, prompt)
+    # Save the reranked results to an output file.
+    BaseSearch.save_to_result_file(reranked_results, output_file_path)
+
+
+# Rerank using LLM
+def rerank_documents_with_llm(queries, base_results, documents, model_name, prompt, batch_size=8):
     model = AutoModelForCausalLM.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     reranked_results = {}
 
-    for query_id, doc_scores in initial_results.items():
+    for query_id, doc_scores in base_results.items():
         # Prepare query text
         query_text = f"{queries[query_id]['Title']} {queries[query_id]['Body']}"
 
@@ -58,16 +68,3 @@ def create_rerank_prompts(query_text, doc_texts, prompt):
                         "the number.")
         prompts.append(prompt)
     return prompts
-
-
-# Automate search, rerank, and save results.
-def llm_search(model, prompt, answers, topics, output_file_path):
-    base_results = BaseSearch.tf_idf_search(topics, answers)
-    print("Base results returned.")
-
-    # Rerank base results with LLM search.
-    print("Reranking with LLM...")
-    reranked_results1 = rerank_documents_with_llm(topics, base_results, answers, model, prompt)
-
-    # Save the reranked results to an output file.
-    BaseSearch.save_to_result_file(reranked_results1, output_file_path)

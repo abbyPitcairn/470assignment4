@@ -4,20 +4,40 @@ import re
 from bs4 import BeautifulSoup
 from collections import defaultdict, Counter
 
-# Implement TF-IDF search from assignment 2 for base results
+# Implement TF-IDF search from assignment two for base results
 # Version: November 12, 2024
 # Author: Abigail Pitcairn
 
 
 # TF-IDF search from a documents file path and queries file path
-def tf_idf_search(queries_file_path, documents_file_path):
-    docs = load_json_file(documents_file_path)
+def tf_idf_search(queries, docs):
     inverted_index = build_inverted_indexes(docs)
-    return query_load_and_search(queries_file_path, inverted_index)
+    return search_all_queries(queries, inverted_index)
 
 
-# Specify how many documents you would like returned in the result file
-total_return_documents = 100
+# Return the set of document IDs ranked by score for the query
+def search(q, inverted_index):
+    result = {}
+    terms = clean_and_tokenize(q)
+    for term in terms:
+        if term in inverted_index:
+            for doc_id, score in inverted_index[term].items():
+                result[doc_id] = result.get(doc_id, 0.0) + score
+    return {k: v for k, v in sorted(result.items(), key=lambda item: item[1], reverse=True)}
+
+
+# Load the queries from the topics file and perform search
+def search_all_queries(queries, inverted_index):
+    print("Searching...")
+    search_results = {}
+    for query_data in queries:
+        query_id = query_data['Id']
+        title = query_data['Title']
+        body = query_data['Body']
+        query_text = f"{title} {body}"
+        result_ids = search(query_text, inverted_index)
+        search_results[query_id] = result_ids
+    return search_results
 
 
 # Define stop words to be removed from index
@@ -91,34 +111,8 @@ def tf_idf(term, doc_tokens, df, docs):
     return tf(term, doc_tokens) * idf(term, df, docs)
 
 
-# Return the set of document IDs ranked by score for the query
-def search(q, inverted_index):
-    result = {}
-    terms = clean_and_tokenize(q)
-    for term in terms:
-        if term in inverted_index:
-            for doc_id, score in inverted_index[term].items():
-                result[doc_id] = result.get(doc_id, 0.0) + score
-    return {k: v for k, v in sorted(result.items(), key=lambda item: item[1], reverse=True)}
-
-
-# Load the queries from the topics file and perform search
-def query_load_and_search(topics, inverted_index):
-    print("Searching...")
-    queries = load_json_file(topics)
-    search_results = {}
-    for query_data in queries:
-        query_id = query_data['Id']
-        title = query_data['Title']
-        body = query_data['Body']
-        query_text = f"{title} {body}"
-        result_ids = search(query_text, inverted_index)
-        search_results[query_id] = result_ids
-    return search_results
-
-
 # Write the input results to an output file
-def save_to_result_file(results, output_file):
+def save_to_result_file(results, output_file, total_return_documents=100):
     with open(output_file, 'w') as f:
         for query_id in results:
             dic_result = results[query_id]
