@@ -1,11 +1,11 @@
 from ranx import Qrels, Run, evaluate
 import matplotlib.pyplot as plt
 
-# Evaluate search results using ranx
+# Evaluate search results using ranx.
 # Version: November 12, 2024
 # Author: Abigail Pitcairn
 
-# Function to print evaluation of results based on qrel
+# Print evaluation of results based on qrel. Must input explicit file paths.
 # Metrics: P@1, P@5, nDCG@5, MRR, MAP
 def evaluate_search_result(qrel_file_path, result_file_path):
     # Load in files
@@ -20,7 +20,7 @@ def evaluate_search_result(qrel_file_path, result_file_path):
     print(evaluate(qrel, run, "map", make_comparable=True))
 
 
-# Function to plot the ski jump graph
+# Plot P@5 values in a ski-jump plot. Must input explicit file paths.
 def plot_ski_jump(qrel_file_path, result_file_path, title="Ski Jump Plot", xlabel="Ranked Queries", ylabel="Precision"):
 
     # Generate data for ski jump plot

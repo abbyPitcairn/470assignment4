@@ -4,7 +4,7 @@ import re
 from bs4 import BeautifulSoup
 from collections import defaultdict, Counter
 
-# Implement TF-IDF search from assignment two for base results
+# Implement TF-IDF search from assignment two for base results.
 # Version: November 12, 2024
 # Author: Abigail Pitcairn
 
@@ -16,9 +16,9 @@ def tf_idf_search(queries, docs):
 
 
 # Return the set of document IDs ranked by score for the query
-def search(q, inverted_index):
+def search(query, inverted_index):
     result = {}
-    terms = clean_and_tokenize(q)
+    terms = clean_and_tokenize(query)
     for term in terms:
         if term in inverted_index:
             for doc_id, score in inverted_index[term].items():
